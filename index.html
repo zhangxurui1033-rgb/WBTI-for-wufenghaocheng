@@ -40,7 +40,6 @@
         100% { filter: hue-rotate(0deg) blur(0px); transform: translate(0, 0) skew(0deg); }
     }
 
-    /* 南洋中学百科碎片悬浮背景 */
     #floating-texts {
         position: fixed;
         top: 0; left: 0;
@@ -52,9 +51,9 @@
     .floating-text {
         position: absolute;
         bottom: -50px;
-        color: rgba(226, 232, 240, 0.035); /* 极低透明度，增加高级感 */
+        color: rgba(226, 232, 240, 0.035);
         white-space: nowrap;
-        font-family: 'Songti SC', 'SimSun', serif; /* 采用明朝体/宋体强化历史感 */
+        font-family: 'Songti SC', 'SimSun', serif;
         letter-spacing: 3px;
         animation: float-up-text linear forwards;
     }
@@ -222,6 +221,10 @@
 
 <div id="custom-cursor"></div>
 
+<audio id="bgm-player" loop preload="auto">
+    <source src="bgm.mp3" type="audio/mpeg">
+</audio>
+
 <div class="glass-panel" id="start-container">
     <h1 id="main-title">吴BTI</h1>
     <div id="sub-title">超越了MBTI一百年的新时代特色心理人格测试</div>
@@ -261,7 +264,6 @@
 </div>
 
 <script>
-    // 题库（31题版）
     const questions = [
         { text: "1. 面对突发的困境或冲突，你的第一处理机制倾向于是：", options: [ { text: "引述既有的规则或先例来证明现状的不合理", effect: { d1: 1, d2: 1, d3: 1 } }, { text: "记录下这个时刻并在社交网络分享", effect: { d1: -1, d2: 1, d3: -1 } }, { text: "缩小关注范围，将注意力转移到个人的专注领域", effect: { d1: 1, d2: -1, d3: -1 } }, { text: "评估现有物理条件，接受现实并等待转机", effect: { d1: -1, d2: -1, d3: 1 } } ] },
         { text: "2. 在阅读日本新本格派推理小说时，你通常最欣赏的元素是：", options: [ { text: "核心诡计的物理可行性与参数的严密计算", effect: { d1: -1, d2: -1, d3: 1 } }, { text: "角色群体之间复杂的交际网络与互动", effect: { d1: -1, d2: 1, d3: -1 } }, { text: "对现存社会律法体系的挑战与逻辑重构", effect: { d1: 1, d2: 1, d3: 1 } }, { text: "凶手或侦探身上那种极其纯粹且孤独的执念", effect: { d1: 1, d2: -1, d3: -1 } } ] },
@@ -293,42 +295,18 @@
         { text: "28. 在一个强制性的严肃会议或课堂上，你通常的状态是：", options: [ { text: "表面端坐，大脑已经切入休眠模式", effect: { d1: 1, d2: -1, d3: -1 } }, { text: "仔细审查主讲人的发言，寻找其逻辑上的漏洞或常识错误", effect: { d1: 1, d2: 1, d3: 1 } }, { text: "无论干什么都能制造出滑稽效果，成为局部的焦点", effect: { d1: 1, d2: 1, d3: -1 } }, { text: "在桌下暗自盘算金融市场的走势或个人投资的得失", effect: { d1: -1, d2: -1, d3: -1 } } ] },
         { text: "29. 提到南洋中学的杰出校友和历史地位，你的第一反应是：", options: [ { text: "骄傲地向别人科普它是国人自主创办的第一所新式中学，巴金和顾维钧都是校友", effect: { d1: 1, d2: 1, d3: 1 } }, { text: "发朋友圈配上郎静山风格的摄影大头照，定位南洋中学", effect: { d1: -1, d2: 1, d3: -1 } }, { text: "冷静分析1896年建校时的建筑结构和客观的历史参数", effect: { d1: -1, d2: -1, d3: 1 } }, { text: "只关心方新元学长在这里留下了怎样无法被磨灭的传说", effect: { d1: 1, d2: -1, d3: -1 } } ] },
         { text: "30. 漫步在华东政法大学的校园里，最吸引你的事情是：", options: [ { text: "沉浸在红砖建筑中，幻想自己是在用法语辩护的法学精英", effect: { d1: 1, d2: 1, d3: 1 } }, { text: "寻觅校园里的女生宿舍位置，并在交友墙上发布动态", effect: { d1: -1, d2: 1, d3: -1 } }, { text: "找一个安静的草坪，戴上耳机拨弄吉他拨片", effect: { d1: 1, d2: -1, d3: 1 } }, { text: "计算华政到南洋中学的通勤距离，评估物理位移的效率", effect: { d1: -1, d2: -1, d3: 1 } } ] },
-        { text: "31. 如果你要策划一场南洋中学到华东政法大学的联动活动，你的方案是：", options: [ { text: "举办一场盛大的中法法律史交流沙龙，请方新元作主旨演讲", effect: { d1: 1, d2: 1, d3: 1 } }, { text: "搞一场覆盖两校的相亲联谊会，扩充自己的猎艳库", effect: { d1: -1, d2: 1, d3: -1 } }, { text: "安静地写一首关于两所学校的勾史摇滚乐，在地下室独自演奏", effect: { d1: 1, d2: -1, d3: -1 } }, { text: "把活动预算全部拿去炒股，并在3月28日精准买入黄金", effect: { d1: -1, d2: -1, d3: -1 } } ] }
+        { text: "31. 如果你要策划一场南洋中学到华东政法大学的联动活动，你的方案是：", options: [ { text: "举办一场盛大的中法法律史交流沙龙，请方新元作主旨演讲", effect: { d1: 1, d2: 1, d3: 1 } }, { text: "搞一场覆盖两校的相亲联谊会，扩充自己的猎艳库", effect: { d1: -1, d2: 1, d3: -1 } }, { text: "安静地写一首关于两所学校的勾史摇滚乐，在地下室独自演奏", effect: { d1: 1, d2: -1, d3: 1 } }, { text: "把活动预算全部拿去炒股，并在3月28日精准买入黄金", effect: { d1: -1, d2: -1, d3: -1 } } ] }
     ];
 
     const outcomes = {
-        "positive_positive_positive": { 
-            title: "【法语享受者】", 
-            desc: "你的人格是亿中无一的“法语享受者”。你比方新元更热爱法律和法语，中法史简直就是你编的。你习惯在宏大的历史文本与严密的法理条文中寻找个人的坐标系。面对现实的繁杂，你总能用古典的视角与严谨的规则感进行消解。你不仅是在适应既有的秩序，更是在脑海中构建着一套属于你自己的精神准则。你对特定语言和律法的精通，让你在群体中保持着理性的距离感。保持这份专注与定力，你的体系自成一派，无需迎合外界的评判标准。" 
-        },
-        "positive_negative_positive": { 
-            title: "【吉他拨片享受者】", 
-            desc: "你的人格是亿中无一的“吉他拨片享受者”。你热爱吉他热爱到成为了吉他拨片。你拥有向内收敛的性格特征，外界的杂音无法侵扰你内心的平静。你习惯在物理空间中打磨自己的爱好，每一次与生活介质的接触，都像拨片与琴弦的碰撞，发出属于你个人的共鸣。你是一个专注于自我体验的人，不需要过度的社交确认。即便在嘈杂的环境中，你也能将自己剥离出来，化作一枚没有情感起伏的拨片。请继续在你的专属频道里保持这种纯粹。" 
-        },
-        "negative_positive_positive": { 
-            title: "【猎艳高手】", 
-            desc: "你的人格是亿中无一的“猎艳高手”。你简直就是上海大学中欧合办专业的某个男生，喜欢走进女生宿舍并发朋友圈，出轨声称自己在猎艳，还喜欢拍自己大头照！你拥有极强的外向型社交动能。生活对你而言是体验与互动的场所，你习惯通过制造话题和发布个人影像来获取外界的关注度。你不在意保守的社会评价，行动力极强，始终在寻找新的社交目标。这种旺盛的精力正是你拓展环境与人际网络的工具，你习惯将个人生活作为展示的橱窗。" 
-        },
-        "negative_negative_positive": { 
-            title: "【328人间体】", 
-            desc: "你的人格是亿中无一的“328人间体”。你的物理书要3月28号才能到货。你拥有如精密仪器般运转的理智大脑。你笃信客观规律，习惯用参数和物理逻辑去解构事物。面对延迟与意外，你展现出极高的情绪稳定性和耐心。你不需要外界的社交反馈来确认自我，你的内心早已建立起一套坚固的防线。你冷静地观察现实，不被无意义的焦虑所消耗。这种将现实问题转化为客观等待的心理机制，让你在任何环境下都能保持绝对的清醒。" 
-        },
-        "positive_positive_negative": { 
-            title: "【搞笑大师】", 
-            desc: "你的人格是亿中无一的“搞笑大师”。你在课上干什么都能导致旁边的女生笑出来并被老师骂笑什么呢。你具备一种天然打破严肃场域氛围的能力。在枯燥的纪律框架内，你通过微小的肢体动作或脱序行为，就能精准触发周围人的情绪反应。你并不是刻意迎合，而是你自身的行为逻辑与既定规则存在错位。这种错位产生了荒诞的喜剧效果，让你成为沉闷环境中的变量。你能够在严肃体系中制造出不受控的欢乐，这是一种极为稀缺的特质。" 
-        },
-        "positive_negative_negative": { 
-            title: "【课堂睡觉享受者】", 
-            desc: "你的人格是亿中无一的“课堂睡觉享受者”。你在刘晖的课上常常睡着。你具备一种切断外部高频信息输入的自我保护机制。面对缺乏刺激的学术环境，你的大脑会自动进入休眠状态以降低能量消耗。这并非怠惰，而是你对周遭环境进行的一种无意识的物理隔绝。在沉睡状态下，你的意识暂时脱离了现实课堂的束缚，获得了一种不受外界干扰的平静。醒来后的你，依然能够以一种游离的态度面对现实的学术要求。保持你的节奏，这是你应对外界消耗的方式。" 
-        },
-        "negative_positive_negative": { 
-            title: "【dinihuang二号】", 
-            desc: "你的人格是亿中无一的“dinihuang二号”。你热爱创作勾史音乐，还热爱赛车和足球，328是你的臭名昭著之作。你是一个充满多线并行特质的个体。你横跨听觉创作与高强度竞技体育，试图在不同的感官刺激中确立自身的行为边界。你创作的音乐在传统标准下显得怪诞，但那正是你解构常规、宣泄内在张力的方式。赛车与足球的高速对抗，则反映了你在现实规则边缘试探的冲动。你具有强烈的多面性，你的行为本身就是一种不循规蹈矩的展现。" 
-        },
-        "negative_negative_negative": { 
-            title: "【炒股爱好者】", 
-            desc: "你的人格是亿中无一的“炒股爱好者”。你热爱炒股，但是买黄金都能亏。你对资本市场的运作抱有一种执拗的迷恋，习惯用K线和财务报表来评估资产价值。然而，现实的市场往往与你的数学模型存在偏差，导致你的投资决策常常出现失误。即便如此，你依然在数字的起伏中寻找控制感。这种在挫折中不断重建交易系统的韧性，构成了你独特的人格特征。你不受短期账面浮亏的影响，真正让你专注的是与市场不确定性进行博弈的过程。" 
-        }
+        "positive_positive_positive": { title: "【法语享受者】", desc: "你的人格是亿中无一的“法语享受者”。你比方新元更热爱法律和法语，中法史简直就是你编的。你习惯在宏大的历史文本与严密的法理条文中寻找个人的坐标系。面对现实的繁杂，你总能用古典的视角与严谨的规则感进行消解。你不仅是在适应既有的秩序，更是在脑海中构建着一套属于你自己的精神准则。你对特定语言和律法的精通，让你在群体中保持着理性的距离感。保持这份专注与定力，你的体系自成一派，无需迎合外界的评判标准。" },
+        "positive_negative_positive": { title: "【吉他拨片享受者】", desc: "你的人格是亿中无一的“吉他拨片享受者”。你热爱吉他热爱到成为了吉他拨片。你拥有向内收敛的性格特征，外界的杂音无法侵扰你内心的平静。你习惯在物理空间中打磨自己的爱好，每一次与生活介质的接触，都像拨片与琴弦的碰撞，发出属于你个人的共鸣。你是一个专注于自我体验的人，不需要过度的社交确认。即便在嘈杂的环境中，你也能将自己剥离出来，化作一枚没有情感起伏的拨片。请继续在你的专属频道里保持这种纯粹。" },
+        "negative_positive_positive": { title: "【猎艳高手】", desc: "你的人格是亿中无一的“猎艳高手”。你简直就是上海大学中欧合办专业的某个男生，喜欢走进女生宿舍并发朋友圈，出轨声称自己在猎艳，还喜欢拍自己大头照！你拥有极强的外向型社交动能。生活对你而言是体验与互动的场所，你习惯通过制造话题和发布个人影像来获取外界的关注度。你不在意保守的社会评价，行动力极强，始终在寻找新的社交目标。这种旺盛的精力正是你拓展环境与人际网络的工具，你习惯将个人生活作为展示的橱窗。" },
+        "negative_negative_positive": { title: "【328人间体】", desc: "你的人格是亿中无一的“328人间体”。你的物理书要3月28号才能到货。你拥有如精密仪器般运转的理智大脑。你笃信客观规律，习惯用参数和物理逻辑去解构事物。面对延迟与意外，你展现出极高的情绪稳定性和耐心。你不需要外界的社交反馈来确认自我，你的内心早已建立起一套坚固的防线。你冷静地观察现实，不被无意义的焦虑所消耗。这种将现实问题转化为客观等待的心理机制，让你在任何环境下都能保持绝对的清醒。" },
+        "positive_positive_negative": { title: "【搞笑大师】", desc: "你的人格是亿中无一的“搞笑大师”。你在课上干什么都能导致旁边的女生笑出来并被老师骂笑什么呢。你具备一种天然打破严肃场域氛围的能力。在枯燥的纪律框架内，你通过微小的肢体动作或脱序行为，就能精准触发周围人的情绪反应。你并不是刻意迎合，而是你自身的行为逻辑与既定规则存在错位。这种错位产生了荒诞的喜剧效果，让你成为沉闷环境中的变量。你能够在严肃体系中制造出不受控的欢乐，这是一种极为稀缺的特质。" },
+        "positive_negative_negative": { title: "【课堂睡觉享受者】", desc: "你的人格是亿中无一的“课堂睡觉享受者”。你在刘晖的课上常常睡着。你具备一种切断外部高频信息输入的自我保护机制。面对缺乏刺激的学术环境，你的大脑会自动进入休眠状态以降低能量消耗。这并非怠惰，而是你对周遭环境进行的一种无意识的物理隔绝。在沉睡状态下，你的意识暂时脱离了现实课堂的束缚，获得了一种不受外界干扰的平静。醒来后的你，依然能够以一种游离的态度面对现实的学术要求。保持你的节奏，这是你应对外界消耗的方式。" },
+        "negative_positive_negative": { title: "【dinihuang二号】", desc: "你的人格是亿中无一的“dinihuang二号”。你热爱创作勾史音乐，还热爱赛车和足球，328是你的臭名昭著之作。你是一个充满多线并行特质的个体。你横跨听觉创作与高强度竞技体育，试图在不同的感官刺激中确立自身的行为边界。你创作的音乐在传统标准下显得怪诞，但那正是你解构常规、宣泄内在张力的方式。赛车与足球的高速对抗，则反映了你在现实规则边缘试探的冲动。你具有强烈的多面性，你的行为本身就是一种不循规蹈矩的展现。" },
+        "negative_negative_negative": { title: "【炒股爱好者】", desc: "你的人格是亿中无一的“炒股爱好者”。你热爱炒股，但是买黄金都能亏。你对资本市场的运作抱有一种执拗的迷恋，习惯用K线和财务报表来评估资产价值。然而，现实的市场往往与你的数学模型存在偏差，导致你的投资决策常常出现失误。即便如此，你依然在数字的起伏中寻找控制感。这种在挫折中不断重建交易系统的韧性，构成了你独特的人格特征。你不受短期账面浮亏的影响，真正让你专注的是与市场不确定性进行博弈的过程。" }
     };
 
     let currentQuestionIndex = 0;
@@ -342,9 +320,11 @@
     let mouseY = window.innerHeight / 2;
     let envColor1 = 'rgba(216, 180, 254, 0.05)';
     let envColor2 = 'rgba(253, 230, 138, 0.04)';
+    
     const customCursor = document.getElementById('custom-cursor');
     const trailCanvas = document.getElementById('trail-canvas');
     const tCtx = trailCanvas.getContext('2d');
+    const bgmPlayer = document.getElementById('bgm-player');
     let trails = [];
 
     const startContainer = document.getElementById("start-container");
@@ -359,7 +339,6 @@
     const startBtn = document.getElementById("start-btn");
     const processingLog = document.getElementById("processing-log");
 
-    // 百度百科碎片随机生成逻辑
     const baikeFragments = [
         "国人自主创办的第一所新式中学", "1896年创办", "巴金", "郎静山", "顾维钧", "方新元",
         "华东政法大学优秀生源基地", "上海市实验性示范性高中", "俭朴 好学 存诚 敬业", "跨越三个世纪的学府"
@@ -371,8 +350,8 @@
         el.className = 'floating-text';
         el.innerText = baikeFragments[Math.floor(Math.random() * baikeFragments.length)];
         el.style.left = (Math.random() * 90) + 'vw';
-        el.style.animationDuration = (Math.random() * 15 + 15) + 's'; // 15-30s
-        el.style.fontSize = (Math.random() * 14 + 14) + 'px'; // 14-28px
+        el.style.animationDuration = (Math.random() * 15 + 15) + 's';
+        el.style.fontSize = (Math.random() * 14 + 14) + 'px';
         container.appendChild(el);
         setTimeout(() => el.remove(), 30000);
     }
@@ -392,16 +371,11 @@
     document.addEventListener('mousemove', (e) => {
         mouseX = e.clientX;
         mouseY = e.clientY;
-        
         customCursor.style.left = mouseX + 'px';
         customCursor.style.top = mouseY + 'px';
 
         if(window.matchMedia("(pointer: fine)").matches) {
-            trails.push({
-                x: mouseX, y: mouseY,
-                life: 1,
-                char: Math.random() > 0.5 ? '0' : '1'
-            });
+            trails.push({ x: mouseX, y: mouseY, life: 1, char: Math.random() > 0.5 ? '0' : '1' });
         }
 
         const xPercent = (mouseX / window.innerWidth) * 100;
@@ -417,8 +391,7 @@
         tCtx.font = "12px monospace";
         for (let i = trails.length - 1; i >= 0; i--) {
             let p = trails[i];
-            p.life -= 0.04; 
-            p.y += 0.5; 
+            p.life -= 0.04; p.y += 0.5; 
             tCtx.fillStyle = `rgba(165, 180, 252, ${p.life * 0.5})`;
             tCtx.fillText(p.char, p.x, p.y);
             if (p.life <= 0) trails.splice(i, 1);
@@ -431,15 +404,12 @@
         let limit = currentQuestionIndex || 1;
         let r1_ratio = Math.max(-1, Math.min(1, scoreDim1 / limit));
         let r2_ratio = Math.max(-1, Math.min(1, scoreDim2 / limit));
-        
         let baseR1 = 216 + (r1_ratio * 30);
         let baseG1 = 180 - (r2_ratio * 40);
         let baseB1 = 254 - (Math.abs(r1_ratio) * 40);
-        
         let baseR2 = 253 - (Math.abs(r2_ratio) * 50);
         let baseG2 = 230 + (r1_ratio * 25);
         let baseB2 = 138 + (r2_ratio * 50);
-
         envColor1 = `rgba(${Math.floor(baseR1)}, ${Math.floor(baseG1)}, ${Math.floor(baseB1)}, 0.06)`;
         envColor2 = `rgba(${Math.floor(baseR2)}, ${Math.floor(baseG2)}, ${Math.floor(baseB2)}, 0.05)`;
     }
@@ -454,6 +424,8 @@
 
     startBtn.addEventListener('click', () => {
         triggerHaptic();
+        // 尝试播放背景音乐
+        bgmPlayer.play().catch(e => console.log("音乐播放受阻:", e));
         customCursor.classList.remove('cursor-hover');
         startContainer.classList.add('hidden');
         quizContainer.classList.remove('hidden');
@@ -464,15 +436,12 @@
         clearInterval(typeWriterInterval);
         element.innerHTML = "";
         isTyping = true;
-        
         let i = 0;
         const textSpan = document.createElement("span");
         const cursorSpan = document.createElement("span");
         cursorSpan.className = "typing-cursor";
-        
         element.appendChild(textSpan);
         element.appendChild(cursorSpan);
-
         typeWriterInterval = setInterval(() => {
             if (i < text.length) {
                 textSpan.innerHTML += text.charAt(i);
@@ -489,10 +458,8 @@
         const currentQuestion = questions[currentQuestionIndex];
         const progressPercent = (currentQuestionIndex / questions.length) * 100;
         progressBar.style.width = progressPercent + "%";
-
         optionsContainer.classList.add("hidden");
         optionsContainer.innerHTML = "";
-
         currentQuestion.options.forEach(option => {
             const button = document.createElement("button");
             button.innerText = option.text;
@@ -506,9 +473,7 @@
             };
             optionsContainer.appendChild(button);
         });
-
         document.getElementById("question-micro").innerText = `AWAITING USER INPUT... [SEQ: ${(currentQuestionIndex + 1).toString().padStart(2, '0')}]`;
-
         typeWriter(currentQuestion.text, questionTextElement, 20, () => {
             optionsContainer.classList.remove("hidden");
             optionsContainer.classList.add("fade-in");
@@ -521,9 +486,7 @@
         scoreDim2 += effect.d2;
         scoreDim3 += effect.d3;
         currentQuestionIndex++;
-        
         updateEnvironmentLight();
-
         if (currentQuestionIndex < questions.length) {
             loadQuestion();
         } else {
@@ -534,24 +497,13 @@
 
     function showProcessing() {
         document.body.classList.add("glitch-active"); 
-        
         setTimeout(() => {
             document.body.classList.remove("glitch-active");
             quizContainer.classList.add("hidden");
             processingContainer.classList.remove("hidden");
-            
-            const logs = [
-                "> 提取行为决策链...",
-                "> 解析环境交互参数...",
-                "> 注入环境光谱色彩值...",
-                "> 比对维度特征数据...",
-                "> 生成最终人格模型...",
-                "> COMPLETED."
-            ];
-            
+            const logs = ["> 提取行为决策链...", "> 解析环境交互参数...", "> 注入环境光谱色彩值...", "> 比对维度特征数据...", "> 生成最终人格模型...", "> COMPLETED."];
             let logIndex = 0;
             processingLog.innerHTML = "";
-
             const logInterval = setInterval(() => {
                 if (logIndex < logs.length) {
                     const p = document.createElement("div");
@@ -573,16 +525,13 @@
     function showResult() {
         resultContainer.classList.remove("hidden");
         resultContainer.classList.add("fade-in");
-
         let key = "";
         key += (scoreDim1 >= 0) ? "positive_" : "negative_";
         key += (scoreDim2 >= 0) ? "positive_" : "negative_";
         key += (scoreDim3 >= 0) ? "positive" : "negative";
-
         const finalOutcome = outcomes[key];
         document.getElementById("result-title").innerText = finalOutcome.title;
         document.getElementById("result-desc").innerText = finalOutcome.desc;
-
         startFireworks();
         setTimeout(() => {
             birthdayMsg.classList.add("show");
@@ -595,7 +544,6 @@
         triggerHaptic();
         const captureTarget = document.getElementById('result-container');
         this.classList.add('hidden');
-        
         html2canvas(captureTarget, {
             backgroundColor: '#1f1e33', 
             scale: 2 
@@ -616,10 +564,8 @@
         const ctx = fCanvas.getContext('2d');
         fCanvas.width = window.innerWidth;
         fCanvas.height = window.innerHeight;
-
         const particles = [];
         const colors = ['#e2e8f0', '#94a3b8', '#cbd5e1', '#fef3c7'];
-
         class Particle {
             constructor(x, y, color) {
                 this.x = x; this.y = y; this.color = color;
@@ -641,28 +587,22 @@
                 ctx.fillStyle = this.color; ctx.fill(); ctx.restore();
             }
         }
-
         function explode(x, y) {
             for (let i = 0; i < 50; i++) particles.push(new Particle(x, y, colors[Math.floor(Math.random() * colors.length)]));
         }
-
         function fAnimate() {
             requestAnimationFrame(fAnimate);
             ctx.clearRect(0, 0, fCanvas.width, fCanvas.height);
-            
             if (Math.random() < 0.03) explode(Math.random() * fCanvas.width, fCanvas.height * Math.random() * 0.5);
-
             for (let i = particles.length - 1; i >= 0; i--) {
                 const p = particles[i];
                 p.update(); p.draw();
                 if (p.alpha <= 0) particles.splice(i, 1);
             }
         }
-
         explode(fCanvas.width / 2, fCanvas.height / 3);
         setTimeout(() => explode(fCanvas.width * 0.3, fCanvas.height * 0.4), 600);
         setTimeout(() => explode(fCanvas.width * 0.7, fCanvas.height * 0.4), 1200);
-
         fAnimate();
     }
 </script>

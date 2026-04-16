@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>吴BTI</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+    @media (pointer: fine) {
+        * { cursor: none !important; }
+    }
+
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        height: 100vh;
+        background-color: #1f1e33;
+        background-image: 
+            radial-gradient(circle at 10% 20%, rgba(216, 180, 254, 0.05), transparent 40%),
+            radial-gradient(circle at 90% 80%, rgba(253, 230, 138, 0.04), transparent 40%);
+        color: #e2e8f0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
+        position: relative;
+        transition: background-image 0.5s ease-out;
+    }
+
+    body.glitch-active {
+        animation: glitch-anim 0.2s linear infinite;
+    }
+    @keyframes glitch-anim {
+        0% { filter: hue-rotate(0deg) blur(0px); transform: translate(0, 0) skew(0deg); }
+        20% { filter: hue-rotate(45deg) blur(1px); transform: translate(-2px, 1px) skew(-1deg); }
+        40% { filter: hue-rotate(-45deg) blur(0px); transform: translate(2px, -1px) skew(1deg); }
+        60% { filter: hue-rotate(90deg) blur(2px); transform: translate(-1px, 2px) skew(-2deg); }
+        80% { filter: hue-rotate(-90deg) blur(1px); transform: translate(1px, -2px) skew(2deg); }
+        100% { filter: hue-rotate(0deg) blur(0px); transform: translate(0, 0) skew(0deg); }
+    }
+
+    /* 南洋中学百科碎片悬浮背景 */
+    #floating-texts {
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        pointer-events: none;
+        z-index: 1;
+        overflow: hidden;
+    }
+    .floating-text {
+        position: absolute;
+        bottom: -50px;
+        color: rgba(226, 232, 240, 0.035); /* 极低透明度，增加高级感 */
+        white-space: nowrap;
+        font-family: 'Songti SC', 'SimSun', serif; /* 采用明朝体/宋体强化历史感 */
+        letter-spacing: 3px;
+        animation: float-up-text linear forwards;
+    }
+    @keyframes float-up-text {
+        0% { transform: translateY(0); opacity: 0; }
+        10% { opacity: 1; }
+        80% { opacity: 1; }
+        100% { transform: translateY(-110vh); opacity: 0; }
+    }
+
+    #custom-cursor {
+        position: fixed;
+        top: -50px; left: -50px;
+        width: 18px; height: 18px;
+        border: 1px solid rgba(165, 180, 252, 0.8);
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        pointer-events: none;
+        z-index: 10000;
+        display: flex; justify-content: center; align-items: center;
+        transition: width 0.2s, height 0.2s, background 0.2s, border-color 0.2s;
+    }
+    #custom-cursor::after {
+        content: '';
+        width: 4px; height: 4px;
+        background: #a5b4fc;
+        border-radius: 50%;
+        transition: transform 0.2s;
+    }
+    #custom-cursor.cursor-hover {
+        width: 32px; height: 32px;
+        background: rgba(165, 180, 252, 0.1);
+        border-color: rgba(165, 180, 252, 0.4);
+    }
+    #custom-cursor.cursor-hover::after {
+        transform: scale(0);
+    }
+    @media (hover: none) and (pointer: coarse) {
+        #custom-cursor { display: none !important; }
+    }
+
+    #trail-canvas {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        pointer-events: none; z-index: 9998;
+    }
+    #fireworks-canvas {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        pointer-events: none; z-index: 9999;
+    }
+
+    #wbti-watermark {
+        position: fixed;
+        top: 50%; left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 30vw; font-weight: 900;
+        color: rgba(255, 255, 255, 0.015);
+        z-index: 0; pointer-events: none; user-select: none;
+        letter-spacing: -1.5vw;
+        animation: float 8s ease-in-out infinite;
+    }
+    @keyframes float {
+        0%, 100% { transform: translate(-50%, -50%) scale(1); }
+        50% { transform: translate(-50%, -52%) scale(1.02); }
+    }
+
+    .glass-panel {
+        background: rgba(31, 30, 51, 0.85);
+        backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(148, 163, 184, 0.15);
+        border-radius: 12px;
+        padding: 40px;
+        width: 85%; max-width: 600px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+        text-align: center;
+        position: relative; z-index: 10;
+        max-height: 90vh; overflow-y: auto;
+    }
+    .glass-panel::-webkit-scrollbar { width: 6px; }
+    .glass-panel::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.1); border-radius: 3px; }
+    .hidden { display: none !important; }
+
+    .micro-en {
+        font-size: 10px; color: #64748b; letter-spacing: 1.5px;
+        text-transform: uppercase; font-family: monospace;
+        margin-top: 4px; display: block;
+    }
+
+    #main-title { font-size: 48px; font-weight: 700; margin-bottom: 16px; color: #f8fafc; letter-spacing: 4px; }
+    #sub-title { font-size: 16px; color: #94a3b8; line-height: 1.8; margin-bottom: 40px; }
+
+    .progress-bar-container {
+        width: 100%; height: 2px;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 1px; margin-bottom: 25px; overflow: hidden;
+    }
+    .progress-bar {
+        height: 100%; width: 0%;
+        background: #a1a1aa; transition: width 0.3s ease;
+    }
+
+    .fade-in { animation: fadeIn 0.4s ease forwards; }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(8px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .typing-cursor {
+        display: inline-block; width: 8px; height: 18px;
+        background-color: #a1a1aa; vertical-align: middle;
+        margin-left: 4px; animation: blink 1s step-end infinite;
+    }
+    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+    .header-group { margin-bottom: 30px; text-align: left; }
+    #question-text { font-size: 18px; line-height: 1.6; margin: 0; font-weight: 400; min-height: 56px; }
+
+    .option-btn {
+        display: block; width: 100%;
+        padding: 14px 18px; margin: 10px 0;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px; color: #cbd5e1;
+        font-size: 15px; transition: background 0.2s, border-color 0.2s, color 0.2s;
+        text-align: left;
+    }
+    .option-btn:hover {
+        background: rgba(148, 163, 184, 0.08);
+        border-color: rgba(148, 163, 184, 0.3); color: #f8fafc;
+    }
+
+    #processing-log {
+        font-family: monospace; font-size: 14px;
+        color: #e2e8f0; text-align: left; line-height: 2; margin-top: 20px;
+    }
+
+    #result-title { font-size: 24px; font-weight: 600; margin-bottom: 24px; color: #f8fafc; letter-spacing: 1px; }
+    #result-desc { font-size: 15px; color: #94a3b8; margin-bottom: 30px; line-height: 1.8; text-align: justify; }
+    
+    .birthday-message {
+        font-size: 22px; font-weight: 500; color: #fef3c7;
+        letter-spacing: 4px; opacity: 0; transform: translateY(10px);
+        transition: opacity 1.5s ease 1s, transform 1.5s ease 1s; margin-bottom: 20px;
+    }
+    .birthday-message.show { opacity: 1; transform: translateY(0); }
+    
+    #start-btn, #save-btn {
+        display: inline-block; width: auto;
+        padding: 12px 32px; background: rgba(76, 110, 245, 0.08); 
+        border: 1px solid rgba(76, 110, 245, 0.3); border-radius: 20px;
+        color: #a5b4fc; font-size: 16px;
+        transition: all 0.2s; margin-top: 10px; text-align: center;
+    }
+    #start-btn:hover, #save-btn:hover {
+        background: rgba(76, 110, 245, 0.15); border-color: rgba(76, 110, 245, 0.5);
+    }
+</style>
+</head>
+<body>
+
+<div id="wbti-watermark">WBTI</div>
+<div id="floating-texts"></div>
+
+<canvas id="trail-canvas"></canvas>
+<canvas id="fireworks-canvas"></canvas>
+
+<div id="custom-cursor"></div>
+
+<div class="glass-panel" id="start-container">
+    <h1 id="main-title">吴BTI</h1>
+    <div id="sub-title">超越了MBTI一百年的新时代特色心理人格测试</div>
+    <span class="micro-en" style="margin-bottom: 30px;">SYSTEM INITIALIZATION COMPLETE</span>
+    <button id="start-btn" class="hover-target">开始鉴定</button>
+</div>
+
+<div class="glass-panel hidden" id="quiz-container">
+    <div class="progress-bar-container">
+        <div class="progress-bar" id="progress-bar"></div>
+    </div>
+    <div id="quiz-content">
+        <div class="header-group">
+            <h2 id="question-text"></h2>
+            <span class="micro-en" id="question-micro">AWAITING USER INPUT...</span>
+        </div>
+        <div id="options-container" class="hidden"></div>
+    </div>
+</div>
+
+<div class="glass-panel hidden" id="processing-container">
+    <div style="font-size: 14px; color: #94a3b8; letter-spacing: 2px;">PROCESSING DATA...</div>
+    <span class="micro-en">EXTRACTING CORE PARAMETERS</span>
+    <div id="processing-log"></div>
+</div>
+
+<div class="glass-panel hidden" id="result-container">
+    <div style="font-size: 12px; color: #4b5563; margin-bottom: 4px; letter-spacing: 2px;">ASSESSMENT COMPLETED</div>
+    <span class="micro-en" style="margin-bottom: 20px; color: #334155;">FINAL MODEL GENERATED</span>
+    <div id="result-title"></div>
+    <div id="result-desc"></div>
+    <div class="birthday-message" id="birthday-msg">祝你生日快乐</div>
+    <button id="save-btn" class="hidden hover-target">
+        保存结果卡片
+        <span class="micro-en" style="color: rgba(165, 180, 252, 0.5); margin-top: 4px;">EXPORT ARCHIVE</span>
+    </button>
+</div>
+
+<script>
+    // 题库（31题版）
+    const questions = [
+        { text: "1. 面对突发的困境或冲突，你的第一处理机制倾向于是：", options: [ { text: "引述既有的规则或先例来证明现状的不合理", effect: { d1: 1, d2: 1, d3: 1 } }, { text: "记录下这个时刻并在社交网络分享", effect: { d1: -1, d2: 1, d3: -1 } }, { text: "缩小关注范围，将注意力转移到个人的专注领域", effect: { d1: 1, d2: -1, d3: -1 } }, { text: "评估现有物理条件，接受现实并等待转机", effect: { d1: -1, d2: -1, d3: 1 } } ] },
+        { text: "2. 在阅读日本新本格派推理小说时，你通常最欣赏的元素是：", options: [ { text: "核心诡计的物理可行性与参数的严密计算", effect: { d1: -1, d2: -1, d3: 1 } }, { text: "角色群体之间复杂的交际网络与互动", effect: { d1: -1, d2: 1, d3: -1 } }, { text: "对现存社会律法体系的挑战与逻辑重构", effect: { d1: 1, d2: 1, d3: 1 } }, { text: "凶手或侦探身上那种极其纯粹且孤独的执念", effect: { d1: 1, d2: -1, d3: -1 } } ] },
+        { text: "3. 听到一首编曲复杂的摇滚乐，你的注意力最容易被什么吸引：", options: [ { text: "乐器演奏的具体质感，如拨片触弦的力度差异", effect: { d1: 1, d2: -1, d3: 1 } }, { text: "歌词中涉及的历史背景与文化隐喻", effect: { d1: 1, d2: 1, d3: 1 } }, { text: "这首歌是否适合分享到个人主页作为品味标签", effect: { d1: -1, d2: 1, d3: -1 } }, { text: "声音频率的分布特征与声学工程结构", effect: { d1: -1, d2: -1, d3: -1 } } ] },
+        { text: "4. 如果由你来设定一个虚构的英雄，其力量核心会基于：", options: [ { text: "某种尚未普及但逻辑自洽的物理学理论", effect: { d1: -1, d2: -1, d3: 1 } }, { text: "依靠外观的社交吸引力和群众的关注度", effect: { d1: -1, d2: 1, d3: -1 } }, { text: "一种难以被大众理解的个人执念", effect: { d1: 1, d2: -1, d3: -1 } }, { text: "维护某套古典法律或秩序的意志体现", effect: { d1: 1, d2: 1, d3: 1 } } ] },
+        { text: "5. 在资源管理类游戏中面临资源耗尽，你的做法是：", options: [ { text: "精确计算自然恢复的时间周期，耐心等待", effect: { d1: -1, d2: -1, d3: 1 } }, { text: "关掉游戏，去做其他高度专注的事情（如练琴）", effect: { d1: 1, d2: -1, d3: -1 } }, { text: "查阅游戏背后的世界观和历史设定文本", effect: { d1: 1, d2: 1, d3: 1 } }, { text: "去社交平台发布状态或查看其他玩家的动态", effect: { d1: -1, d2: 1, d3: -1 } } ] },
+        { text: "6. 如果你预订了一件必须的物品，但物流提示延期，你会：", options: [ { text: "记录下预计到货的确切日期（如3月28日），不再挂念", effect: { d1: -1, d2: -1, d3: 1 } }, { text: "在社交软件上发布图文抱怨物流效率", effect: { d1: -1, d2: 1, d3: -1 } }, { text: "查阅相关条款，评估自身的权益界限", effect: { d1: 1, d2: 1, d3: 1 } }, { text: "将其视为一种日常等待，继续沉浸在个人的爱好中", effect: { d1: 1, d2: -1, d3: -1 } } ] },
+        { text: "7. 在大学校园里，你最有可能保持的活动轨迹是：", options: [ { text: "一个人在特定的封闭角落反复练习某项技能", effect: { d1: 1, d2: -1, d3: 1 } }, { text: "在人流密集的区域或他人宿舍附近活动", effect: { d1: -1, d2: 1, d3: -1 } }, { text: "在特定区域翻阅厚重的文科或法学史料", effect: { d1: 1, d2: 1, d3: 1 } }, { text: "在实验室或图书馆查阅理工科客观文献", effect: { d1: -1, d2: -1, d3: -1 } } ] },
+        { text: "8. 当他人对你的专业领域提出不准确的质疑时，你的反应是：", options: [ { text: "引经据典，用一套完整的理论驳倒对方", effect: { d1: 1, d2: 1, d3: 1 } }, { text: "认为对方缺乏基础常识，不作多余解释", effect: { d1: -1, d2: -1, d3: 1 } }, { text: "转移话题，以维持表面的社交互动", effect: { d1: -1, d2: 1, d3: -1 } }, { text: "认为他人无需理解，继续保持自己的偏好", effect: { d1: 1, d2: -1, d3: -1 } } ] },
+        { text: "9. 如果让你主导一项创作，其核心题材更倾向于：", options: [ { text: "一部基于严密考究的双边关系史料", effect: { d1: 1, d2: 1, d3: 1 } }, { text: "一本注重客观事实与参数观测的说明书", effect: { d1: -1, d2: -1, d3: -1 } }, { text: "一首结构简单但极具个人情绪的器乐曲", effect: { d1: 1, d2: -1, d3: -1 } }, { text: "一份记录特定人群情感交集的社交图册", effect: { d1: -1, d2: 1, d3: 1 } } ] },
+        { text: "10. 在人际交往中，你下意识呈现出的外在形象更接近：", options: [ { text: "活跃、经历丰富且乐于展示", effect: { d1: -1, d2: 1, d3: -1 } }, { text: "严谨、博学且具备规则感", effect: { d1: 1, d2: 1, d3: 1 } }, { text: "稳定、精确且情绪起伏较小", effect: { d1: -1, d2: -1, d3: 1 } }, { text: "专注、纯粹且具备某种特定执念", effect: { d1: 1, d2: -1, d3: -1 } } ] },
+        { text: "11. 对于自己深爱的事物，你的态度倾向于是：", options: [ { text: "希望消除自身的主体性，完全化作该事物的一部分", effect: { d1: 1, d2: -1, d3: -1 } }, { text: "试图掌握其演变脉络，成为该领域的解释者", effect: { d1: 1, d2: 1, d3: 1 } }, { text: "保持观察者的距离，将其视为客观规律的体现", effect: { d1: -1, d2: -1, d3: -1 } }, { text: "将其作为自身社交价值的一部分进行展示", effect: { d1: -1, d2: 1, d3: -1 } } ] },
+        { text: "12. 结束了一周的既定日程，周五晚上的你通常会：", options: [ { text: "寻找社交聚会或去其他区域进行试探性交往", effect: { d1: -1, d2: 1, d3: -1 } }, { text: "拿起熟悉的工具，进行机械性重复的练习", effect: { d1: 1, d2: -1, d3: 1 } }, { text: "核对时间表，确认各项事务的客观进度", effect: { d1: -1, d2: -1, d3: 1 } }, { text: "整理信息，构建自己理解中的逻辑脉络", effect: { d1: 1, d2: 1, d3: 1 } } ] },
+        { text: "13. 你认为维持社会或系统运行的基础机制在于：", options: [ { text: "客观存在的物理常数与时间约束", effect: { d1: -1, d2: -1, d3: 1 } }, { text: "人类建立的繁复法条与历史共识", effect: { d1: 1, d2: 1, d3: 1 } }, { text: "个体之间不断交换的关注度与需求", effect: { d1: -1, d2: 1, d3: -1 } }, { text: "少数人内心坚持的微小执念", effect: { d1: 1, d2: -1, d3: -1 } } ] },
+        { text: "14. 当心理压力达到临界值时，你倾向的缓解方式是：", options: [ { text: "增加在社交媒体上的曝光度与互动频率", effect: { d1: -1, d2: 1, d3: -1 } }, { text: "通过机械重复的局部动作（如弹拨）来放空意识", effect: { d1: 1, d2: -1, d3: -1 } }, { text: "输出长篇文字来阐明原委并占据逻辑高点", effect: { d1: 1, d2: 1, d3: 1 } }, { text: "强制降低情绪阈值，进入被动的等待状态", effect: { d1: -1, d2: -1, d3: -1 } } ] },
+        { text: "15. 处于陌生的街区，最先捕捉你注意力的信息是：", options: [ { text: "过往行人的外貌特征与社交属性", effect: { d1: -1, d2: 1, d3: -1 } }, { text: "周边建筑的力学结构与空间布局", effect: { d1: -1, d2: -1, d3: 1 } }, { text: "街边标语、规章或广告牌上的文字逻辑", effect: { d1: 1, d2: 1, d3: 1 } }, { text: "某些不易察觉的特定环境音或背景音乐", effect: { d1: 1, d2: -1, d3: -1 } } ] },
+        { text: "16. 如果必须用一个物件来指代你当前的心理特征，那会是：", options: [ { text: "一本受限于客观条件尚未发货的理科教材", effect: { d1: -1, d2: -1, d3: 1 } }, { text: "一张强调面部特征并经过修饰的个人照片", effect: { d1: -1, d2: 1, d3: -1 } }, { text: "一份被反复批注并修改过体系的外文文本", effect: { d1: 1, d2: 1, d3: 1 } }, { text: "一枚磨损严重但依然保持锐度的接触媒介", effect: { d1: 1, d2: -1, d3: -1 } } ] },
+        { text: "17. 参与群体讨论时，你的行为模式倾向于：", options: [ { text: "致力于重申规则或纠正他人概念上的偏差", effect: { d1: 1, d2: 1, d3: 1 } }, { text: "仅在涉及具体数据或事实时进行客观纠正", effect: { d1: -1, d2: -1, d3: -1 } }, { text: "极少发言，除非话题直接触及你的核心兴趣", effect: { d1: 1, d2: -1, d3: 1 } }, { text: "活跃气氛，并将话题焦点转移到自己身上", effect: { d1: -1, d2: 1, d3: -1 } } ] },
+        { text: "18. 设想未来的发展路径，你目前的驱动力在于希望：", options: [ { text: "按部就班地完成预定计划，获取确定的结果", effect: { d1: -1, d2: -1, d3: 1 } }, { text: "拓宽交际圈，获得更多的社交认证与反馈", effect: { d1: -1, d2: 1, d3: -1 } }, { text: "在某个特定的文科或秩序领域建立话语权", effect: { d1: 1, d2: 1, d3: 1 } }, { text: "保持现状的纯粹性，不被外界干扰偏好", effect: { d1: 1, d2: -1, d3: -1 } } ] },
+        { text: "19. 如果你做出一个偏离常规的决定，其内在原因通常是：", options: [ { text: "为了获取新鲜感或满足社交层面的刺激", effect: { d1: -1, d2: 1, d3: -1 } }, { text: "出于对某项具体事物的极度热爱与同化心理", effect: { d1: 1, d2: -1, d3: -1 } }, { text: "认为现有规则不合理，试图践行自己的秩序", effect: { d1: 1, d2: 1, d3: 1 } }, { text: "经过冷静推演后认定这是最高效的路径", effect: { d1: -1, d2: -1, d3: -1 } } ] },
+        { text: "20. 在具有特定纪念意义的日期，你更看重：", options: [ { text: "客观存在的延迟事物终于如期交付", effect: { d1: -1, d2: -1, d3: 1 } }, { text: "独自沉浸于自己热爱的事物中度过", effect: { d1: 1, d2: -1, d3: -1 } }, { text: "收到大量的外部关注、互动与社交反馈", effect: { d1: -1, d2: 1, d3: -1 } }, { text: "获得一份能够证实你专业水平的评价", effect: { d1: 1, d2: 1, d3: 1 } } ] },
+        { text: "21. 作为某个网络服务器或群组的管理者，面对成员之间的冲突，你的处理方式是：", options: [ { text: "运用后台指令直接修改权限参数，进行物理隔离", effect: { d1: -1, d2: -1, d3: 1 } }, { text: "制定一套完整的虚拟规则并组织公开的辩论判定", effect: { d1: 1, d2: 1, d3: 1 } }, { text: "觉得很有趣，隐身在旁边看热闹并截图发到其他社交圈", effect: { d1: -1, d2: 1, d3: -1 } }, { text: "懒得介入，直接下线去听音乐或休息", effect: { d1: 1, d2: -1, d3: -1 } } ] },
+        { text: "22. 在观看长篇的游戏剧情分析或深度视频时，你的习惯是：", options: [ { text: "关注视频制作者对文案隐喻和文学性的解读", effect: { d1: 1, d2: -1, d3: 1 } }, { text: "在弹幕和评论区高频互动，玩梗造词", effect: { d1: -1, d2: 1, d3: -1 } }, { text: "仔细核对视频里的数值计算和机制推导是否准确", effect: { d1: -1, d2: -1, d3: 1 } }, { text: "结合自己对内容的碎片印象，去创作相关的衍生段子", effect: { d1: 1, d2: 1, d3: -1 } } ] },
+        { text: "23. 当讨论到一个复杂的历史或社会演变阶段时，你的切入点通常是：", options: [ { text: "经济基础、生产力数据与客观的物质条件", effect: { d1: -1, d2: -1, d3: 1 } }, { text: "法律条文的更迭与人文学科体系的建立", effect: { d1: 1, d2: 1, d3: 1 } }, { text: "利用这个话题作为自己高谈阔论、吸引注意力的资本", effect: { d1: -1, d2: 1, d3: -1 } }, { text: "觉得枯燥，闭上眼睛进入自己的休眠或冥想状态", effect: { d1: 1, d2: -1, d3: -1 } } ] },
+        { text: "24. 在动作游戏中面对高难度的战斗，你的策略偏向于：", options: [ { text: "培养极致的肌肉记忆与节奏感，如同弹奏乐器", effect: { d1: 1, d2: -1, d3: -1 } }, { text: "严密计算敌人的韧性值、削韧动作和伤害帧", effect: { d1: -1, d2: -1, d3: 1 } }, { text: "选最华丽的角色打出连段，录制视频准备炫耀", effect: { d1: -1, d2: 1, d3: -1 } }, { text: "试图理解敌人的背景设定，感受剧情设定的悲剧色彩", effect: { d1: 1, d2: 1, d3: 1 } } ] },
+        { text: "25. 面对一笔突然获得的可用资金，你更倾向于如何分配：", options: [ { text: "投入高风险高波动的金融市场或购买黄金", effect: { d1: -1, d2: -1, d3: -1 } }, { text: "购买昂贵的乐器配件或绝版的文科学术著作", effect: { d1: 1, d2: -1, d3: 1 } }, { text: "升级自己的载具配件或购买吸睛的潮玩商品", effect: { d1: -1, d2: 1, d3: -1 } }, { text: "组局请客，巩固自己在特定社交圈中的话语权", effect: { d1: -1, d2: 1, d3: 1 } } ] },
+        { text: "26. 评价一段极其小众或不寻常的音乐片段时，你的视角是：", options: [ { text: "分析其音频波形与合成器参数的物理合理性", effect: { d1: -1, d2: -1, d3: 1 } }, { text: "认为它是一种打破常规的绝妙搞笑手段", effect: { d1: 1, d2: 1, d3: -1 } }, { text: "觉得这是伟大的创作，并试图将其融入个人的世界里", effect: { d1: 1, d2: -1, d3: -1 } }, { text: "引经据典，长篇大论地论述其与既定法度的冲突", effect: { d1: 1, d2: 1, d3: 1 } } ] },
+        { text: "27. 当看到黑板上写满复杂的微积分与泰勒展开公式时，你会：", options: [ { text: "迅速寻找其逻辑破绽并尝试给出推导过程", effect: { d1: -1, d2: -1, d3: 1 } }, { text: "感到视觉疲劳，瞬间切断信息输入进入睡眠状态", effect: { d1: 1, d2: -1, d3: -1 } }, { text: "觉得这些符号排列组合起来具有某种古典文本的美感", effect: { d1: 1, d2: -1, d3: 1 } }, { text: "在下面搞怪接话，试图逗笑周围的听众", effect: { d1: 1, d2: 1, d3: -1 } } ] },
+        { text: "28. 在一个强制性的严肃会议或课堂上，你通常的状态是：", options: [ { text: "表面端坐，大脑已经切入休眠模式", effect: { d1: 1, d2: -1, d3: -1 } }, { text: "仔细审查主讲人的发言，寻找其逻辑上的漏洞或常识错误", effect: { d1: 1, d2: 1, d3: 1 } }, { text: "无论干什么都能制造出滑稽效果，成为局部的焦点", effect: { d1: 1, d2: 1, d3: -1 } }, { text: "在桌下暗自盘算金融市场的走势或个人投资的得失", effect: { d1: -1, d2: -1, d3: -1 } } ] },
+        { text: "29. 提到南洋中学的杰出校友和历史地位，你的第一反应是：", options: [ { text: "骄傲地向别人科普它是国人自主创办的第一所新式中学，巴金和顾维钧都是校友", effect: { d1: 1, d2: 1, d3: 1 } }, { text: "发朋友圈配上郎静山风格的摄影大头照，定位南洋中学", effect: { d1: -1, d2: 1, d3: -1 } }, { text: "冷静分析1896年建校时的建筑结构和客观的历史参数", effect: { d1: -1, d2: -1, d3: 1 } }, { text: "只关心方新元学长在这里留下了怎样无法被磨灭的传说", effect: { d1: 1, d2: -1, d3: -1 } } ] },
+        { text: "30. 漫步在华东政法大学的校园里，最吸引你的事情是：", options: [ { text: "沉浸在红砖建筑中，幻想自己是在用法语辩护的法学精英", effect: { d1: 1, d2: 1, d3: 1 } }, { text: "寻觅校园里的女生宿舍位置，并在交友墙上发布动态", effect: { d1: -1, d2: 1, d3: -1 } }, { text: "找一个安静的草坪，戴上耳机拨弄吉他拨片", effect: { d1: 1, d2: -1, d3: 1 } }, { text: "计算华政到南洋中学的通勤距离，评估物理位移的效率", effect: { d1: -1, d2: -1, d3: 1 } } ] },
+        { text: "31. 如果你要策划一场南洋中学到华东政法大学的联动活动，你的方案是：", options: [ { text: "举办一场盛大的中法法律史交流沙龙，请方新元作主旨演讲", effect: { d1: 1, d2: 1, d3: 1 } }, { text: "搞一场覆盖两校的相亲联谊会，扩充自己的猎艳库", effect: { d1: -1, d2: 1, d3: -1 } }, { text: "安静地写一首关于两所学校的勾史摇滚乐，在地下室独自演奏", effect: { d1: 1, d2: -1, d3: -1 } }, { text: "把活动预算全部拿去炒股，并在3月28日精准买入黄金", effect: { d1: -1, d2: -1, d3: -1 } } ] }
+    ];
+
+    const outcomes = {
+        "positive_positive_positive": { 
+            title: "【法语享受者】", 
+            desc: "你的人格是亿中无一的“法语享受者”。你比方新元更热爱法律和法语，中法史简直就是你编的。你习惯在宏大的历史文本与严密的法理条文中寻找个人的坐标系。面对现实的繁杂，你总能用古典的视角与严谨的规则感进行消解。你不仅是在适应既有的秩序，更是在脑海中构建着一套属于你自己的精神准则。你对特定语言和律法的精通，让你在群体中保持着理性的距离感。保持这份专注与定力，你的体系自成一派，无需迎合外界的评判标准。" 
+        },
+        "positive_negative_positive": { 
+            title: "【吉他拨片享受者】", 
+            desc: "你的人格是亿中无一的“吉他拨片享受者”。你热爱吉他热爱到成为了吉他拨片。你拥有向内收敛的性格特征，外界的杂音无法侵扰你内心的平静。你习惯在物理空间中打磨自己的爱好，每一次与生活介质的接触，都像拨片与琴弦的碰撞，发出属于你个人的共鸣。你是一个专注于自我体验的人，不需要过度的社交确认。即便在嘈杂的环境中，你也能将自己剥离出来，化作一枚没有情感起伏的拨片。请继续在你的专属频道里保持这种纯粹。" 
+        },
+        "negative_positive_positive": { 
+            title: "【猎艳高手】", 
+            desc: "你的人格是亿中无一的“猎艳高手”。你简直就是上海大学中欧合办专业的某个男生，喜欢走进女生宿舍并发朋友圈，出轨声称自己在猎艳，还喜欢拍自己大头照！你拥有极强的外向型社交动能。生活对你而言是体验与互动的场所，你习惯通过制造话题和发布个人影像来获取外界的关注度。你不在意保守的社会评价，行动力极强，始终在寻找新的社交目标。这种旺盛的精力正是你拓展环境与人际网络的工具，你习惯将个人生活作为展示的橱窗。" 
+        },
+        "negative_negative_positive": { 
+            title: "【328人间体】", 
+            desc: "你的人格是亿中无一的“328人间体”。你的物理书要3月28号才能到货。你拥有如精密仪器般运转的理智大脑。你笃信客观规律，习惯用参数和物理逻辑去解构事物。面对延迟与意外，你展现出极高的情绪稳定性和耐心。你不需要外界的社交反馈来确认自我，你的内心早已建立起一套坚固的防线。你冷静地观察现实，不被无意义的焦虑所消耗。这种将现实问题转化为客观等待的心理机制，让你在任何环境下都能保持绝对的清醒。" 
+        },
+        "positive_positive_negative": { 
+            title: "【搞笑大师】", 
+            desc: "你的人格是亿中无一的“搞笑大师”。你在课上干什么都能导致旁边的女生笑出来并被老师骂笑什么呢。你具备一种天然打破严肃场域氛围的能力。在枯燥的纪律框架内，你通过微小的肢体动作或脱序行为，就能精准触发周围人的情绪反应。你并不是刻意迎合，而是你自身的行为逻辑与既定规则存在错位。这种错位产生了荒诞的喜剧效果，让你成为沉闷环境中的变量。你能够在严肃体系中制造出不受控的欢乐，这是一种极为稀缺的特质。" 
+        },
+        "positive_negative_negative": { 
+            title: "【课堂睡觉享受者】", 
+            desc: "你的人格是亿中无一的“课堂睡觉享受者”。你在刘晖的课上常常睡着。你具备一种切断外部高频信息输入的自我保护机制。面对缺乏刺激的学术环境，你的大脑会自动进入休眠状态以降低能量消耗。这并非怠惰，而是你对周遭环境进行的一种无意识的物理隔绝。在沉睡状态下，你的意识暂时脱离了现实课堂的束缚，获得了一种不受外界干扰的平静。醒来后的你，依然能够以一种游离的态度面对现实的学术要求。保持你的节奏，这是你应对外界消耗的方式。" 
+        },
+        "negative_positive_negative": { 
+            title: "【dinihuang二号】", 
+            desc: "你的人格是亿中无一的“dinihuang二号”。你热爱创作勾史音乐，还热爱赛车和足球，328是你的臭名昭著之作。你是一个充满多线并行特质的个体。你横跨听觉创作与高强度竞技体育，试图在不同的感官刺激中确立自身的行为边界。你创作的音乐在传统标准下显得怪诞，但那正是你解构常规、宣泄内在张力的方式。赛车与足球的高速对抗，则反映了你在现实规则边缘试探的冲动。你具有强烈的多面性，你的行为本身就是一种不循规蹈矩的展现。" 
+        },
+        "negative_negative_negative": { 
+            title: "【炒股爱好者】", 
+            desc: "你的人格是亿中无一的“炒股爱好者”。你热爱炒股，但是买黄金都能亏。你对资本市场的运作抱有一种执拗的迷恋，习惯用K线和财务报表来评估资产价值。然而，现实的市场往往与你的数学模型存在偏差，导致你的投资决策常常出现失误。即便如此，你依然在数字的起伏中寻找控制感。这种在挫折中不断重建交易系统的韧性，构成了你独特的人格特征。你不受短期账面浮亏的影响，真正让你专注的是与市场不确定性进行博弈的过程。" 
+        }
+    };
+
+    let currentQuestionIndex = 0;
+    let scoreDim1 = 0;
+    let scoreDim2 = 0;
+    let scoreDim3 = 0;
+    let typeWriterInterval = null;
+    let isTyping = false;
+
+    let mouseX = window.innerWidth / 2;
+    let mouseY = window.innerHeight / 2;
+    let envColor1 = 'rgba(216, 180, 254, 0.05)';
+    let envColor2 = 'rgba(253, 230, 138, 0.04)';
+    const customCursor = document.getElementById('custom-cursor');
+    const trailCanvas = document.getElementById('trail-canvas');
+    const tCtx = trailCanvas.getContext('2d');
+    let trails = [];
+
+    const startContainer = document.getElementById("start-container");
+    const quizContainer = document.getElementById("quiz-container");
+    const processingContainer = document.getElementById("processing-container");
+    const resultContainer = document.getElementById("result-container");
+    const questionTextElement = document.getElementById("question-text");
+    const optionsContainer = document.getElementById("options-container");
+    const progressBar = document.getElementById("progress-bar");
+    const birthdayMsg = document.getElementById("birthday-msg");
+    const saveBtn = document.getElementById("save-btn");
+    const startBtn = document.getElementById("start-btn");
+    const processingLog = document.getElementById("processing-log");
+
+    // 百度百科碎片随机生成逻辑
+    const baikeFragments = [
+        "国人自主创办的第一所新式中学", "1896年创办", "巴金", "郎静山", "顾维钧", "方新元",
+        "华东政法大学优秀生源基地", "上海市实验性示范性高中", "俭朴 好学 存诚 敬业", "跨越三个世纪的学府"
+    ];
+    function spawnFloatingText() {
+        const container = document.getElementById('floating-texts');
+        if (!container) return;
+        const el = document.createElement('div');
+        el.className = 'floating-text';
+        el.innerText = baikeFragments[Math.floor(Math.random() * baikeFragments.length)];
+        el.style.left = (Math.random() * 90) + 'vw';
+        el.style.animationDuration = (Math.random() * 15 + 15) + 's'; // 15-30s
+        el.style.fontSize = (Math.random() * 14 + 14) + 'px'; // 14-28px
+        container.appendChild(el);
+        setTimeout(() => el.remove(), 30000);
+    }
+    setInterval(spawnFloatingText, 2500);
+
+    function resizeCanvas() {
+        trailCanvas.width = window.innerWidth;
+        trailCanvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    function triggerHaptic() {
+        if (navigator.vibrate) navigator.vibrate(10);
+    }
+
+    document.addEventListener('mousemove', (e) => {
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+        
+        customCursor.style.left = mouseX + 'px';
+        customCursor.style.top = mouseY + 'px';
+
+        if(window.matchMedia("(pointer: fine)").matches) {
+            trails.push({
+                x: mouseX, y: mouseY,
+                life: 1,
+                char: Math.random() > 0.5 ? '0' : '1'
+            });
+        }
+
+        const xPercent = (mouseX / window.innerWidth) * 100;
+        const yPercent = (mouseY / window.innerHeight) * 100;
+        document.body.style.backgroundImage = `
+            radial-gradient(circle at ${xPercent}% ${yPercent}%, ${envColor1}, transparent 40%),
+            radial-gradient(circle at ${100 - xPercent}% ${100 - yPercent}%, ${envColor2}, transparent 40%)
+        `;
+    });
+
+    function animateTrail() {
+        tCtx.clearRect(0, 0, trailCanvas.width, trailCanvas.height);
+        tCtx.font = "12px monospace";
+        for (let i = trails.length - 1; i >= 0; i--) {
+            let p = trails[i];
+            p.life -= 0.04; 
+            p.y += 0.5; 
+            tCtx.fillStyle = `rgba(165, 180, 252, ${p.life * 0.5})`;
+            tCtx.fillText(p.char, p.x, p.y);
+            if (p.life <= 0) trails.splice(i, 1);
+        }
+        requestAnimationFrame(animateTrail);
+    }
+    animateTrail();
+
+    function updateEnvironmentLight() {
+        let limit = currentQuestionIndex || 1;
+        let r1_ratio = Math.max(-1, Math.min(1, scoreDim1 / limit));
+        let r2_ratio = Math.max(-1, Math.min(1, scoreDim2 / limit));
+        
+        let baseR1 = 216 + (r1_ratio * 30);
+        let baseG1 = 180 - (r2_ratio * 40);
+        let baseB1 = 254 - (Math.abs(r1_ratio) * 40);
+        
+        let baseR2 = 253 - (Math.abs(r2_ratio) * 50);
+        let baseG2 = 230 + (r1_ratio * 25);
+        let baseB2 = 138 + (r2_ratio * 50);
+
+        envColor1 = `rgba(${Math.floor(baseR1)}, ${Math.floor(baseG1)}, ${Math.floor(baseB1)}, 0.06)`;
+        envColor2 = `rgba(${Math.floor(baseR2)}, ${Math.floor(baseG2)}, ${Math.floor(baseB2)}, 0.05)`;
+    }
+
+    function bindCursorHover() {
+        document.querySelectorAll('.hover-target, .option-btn').forEach(el => {
+            el.addEventListener('mouseenter', () => customCursor.classList.add('cursor-hover'));
+            el.addEventListener('mouseleave', () => customCursor.classList.remove('cursor-hover'));
+        });
+    }
+    bindCursorHover();
+
+    startBtn.addEventListener('click', () => {
+        triggerHaptic();
+        customCursor.classList.remove('cursor-hover');
+        startContainer.classList.add('hidden');
+        quizContainer.classList.remove('hidden');
+        loadQuestion();
+    });
+
+    function typeWriter(text, element, speed, callback) {
+        clearInterval(typeWriterInterval);
+        element.innerHTML = "";
+        isTyping = true;
+        
+        let i = 0;
+        const textSpan = document.createElement("span");
+        const cursorSpan = document.createElement("span");
+        cursorSpan.className = "typing-cursor";
+        
+        element.appendChild(textSpan);
+        element.appendChild(cursorSpan);
+
+        typeWriterInterval = setInterval(() => {
+            if (i < text.length) {
+                textSpan.innerHTML += text.charAt(i);
+                i++;
+            } else {
+                clearInterval(typeWriterInterval);
+                isTyping = false;
+                if (callback) callback();
+            }
+        }, speed);
+    }
+
+    function loadQuestion() {
+        const currentQuestion = questions[currentQuestionIndex];
+        const progressPercent = (currentQuestionIndex / questions.length) * 100;
+        progressBar.style.width = progressPercent + "%";
+
+        optionsContainer.classList.add("hidden");
+        optionsContainer.innerHTML = "";
+
+        currentQuestion.options.forEach(option => {
+            const button = document.createElement("button");
+            button.innerText = option.text;
+            button.classList.add("option-btn");
+            button.onclick = () => {
+                if(!isTyping) {
+                    triggerHaptic();
+                    customCursor.classList.remove('cursor-hover');
+                    selectOption(option.effect);
+                }
+            };
+            optionsContainer.appendChild(button);
+        });
+
+        document.getElementById("question-micro").innerText = `AWAITING USER INPUT... [SEQ: ${(currentQuestionIndex + 1).toString().padStart(2, '0')}]`;
+
+        typeWriter(currentQuestion.text, questionTextElement, 20, () => {
+            optionsContainer.classList.remove("hidden");
+            optionsContainer.classList.add("fade-in");
+            bindCursorHover(); 
+        });
+    }
+
+    function selectOption(effect) {
+        scoreDim1 += effect.d1;
+        scoreDim2 += effect.d2;
+        scoreDim3 += effect.d3;
+        currentQuestionIndex++;
+        
+        updateEnvironmentLight();
+
+        if (currentQuestionIndex < questions.length) {
+            loadQuestion();
+        } else {
+            progressBar.style.width = "100%";
+            setTimeout(showProcessing, 400); 
+        }
+    }
+
+    function showProcessing() {
+        document.body.classList.add("glitch-active"); 
+        
+        setTimeout(() => {
+            document.body.classList.remove("glitch-active");
+            quizContainer.classList.add("hidden");
+            processingContainer.classList.remove("hidden");
+            
+            const logs = [
+                "> 提取行为决策链...",
+                "> 解析环境交互参数...",
+                "> 注入环境光谱色彩值...",
+                "> 比对维度特征数据...",
+                "> 生成最终人格模型...",
+                "> COMPLETED."
+            ];
+            
+            let logIndex = 0;
+            processingLog.innerHTML = "";
+
+            const logInterval = setInterval(() => {
+                if (logIndex < logs.length) {
+                    const p = document.createElement("div");
+                    p.innerText = logs[logIndex];
+                    p.classList.add("fade-in");
+                    processingLog.appendChild(p);
+                    logIndex++;
+                } else {
+                    clearInterval(logInterval);
+                    setTimeout(() => {
+                        processingContainer.classList.add("hidden");
+                        showResult();
+                    }, 600);
+                }
+            }, 500); 
+        }, 200);
+    }
+
+    function showResult() {
+        resultContainer.classList.remove("hidden");
+        resultContainer.classList.add("fade-in");
+
+        let key = "";
+        key += (scoreDim1 >= 0) ? "positive_" : "negative_";
+        key += (scoreDim2 >= 0) ? "positive_" : "negative_";
+        key += (scoreDim3 >= 0) ? "positive" : "negative";
+
+        const finalOutcome = outcomes[key];
+        document.getElementById("result-title").innerText = finalOutcome.title;
+        document.getElementById("result-desc").innerText = finalOutcome.desc;
+
+        startFireworks();
+        setTimeout(() => {
+            birthdayMsg.classList.add("show");
+            saveBtn.classList.remove("hidden"); 
+            bindCursorHover(); 
+        }, 1000);
+    }
+
+    saveBtn.addEventListener('click', function() {
+        triggerHaptic();
+        const captureTarget = document.getElementById('result-container');
+        this.classList.add('hidden');
+        
+        html2canvas(captureTarget, {
+            backgroundColor: '#1f1e33', 
+            scale: 2 
+        }).then(canvas => {
+            const link = document.createElement('a');
+            link.download = '吴BTI测试结果.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+            this.classList.remove('hidden');
+        }).catch(err => {
+            console.error("截图生成失败: ", err);
+            this.classList.remove('hidden');
+        });
+    });
+
+    function startFireworks() {
+        const fCanvas = document.getElementById('fireworks-canvas');
+        const ctx = fCanvas.getContext('2d');
+        fCanvas.width = window.innerWidth;
+        fCanvas.height = window.innerHeight;
+
+        const particles = [];
+        const colors = ['#e2e8f0', '#94a3b8', '#cbd5e1', '#fef3c7'];
+
+        class Particle {
+            constructor(x, y, color) {
+                this.x = x; this.y = y; this.color = color;
+                const angle = Math.random() * Math.PI * 2;
+                const speed = Math.random() * 4 + 1.5;
+                this.vx = Math.cos(angle) * speed;
+                this.vy = Math.sin(angle) * speed;
+                this.friction = 0.95; this.gravity = 0.04;
+                this.alpha = 1; this.decay = Math.random() * 0.015 + 0.01;
+            }
+            update() {
+                this.vx *= this.friction; this.vy *= this.friction;
+                this.vy += this.gravity; this.x += this.vx; this.y += this.vy;
+                this.alpha -= this.decay;
+            }
+            draw() {
+                ctx.save(); ctx.globalAlpha = this.alpha;
+                ctx.beginPath(); ctx.arc(this.x, this.y, 1.5, 0, Math.PI * 2);
+                ctx.fillStyle = this.color; ctx.fill(); ctx.restore();
+            }
+        }
+
+        function explode(x, y) {
+            for (let i = 0; i < 50; i++) particles.push(new Particle(x, y, colors[Math.floor(Math.random() * colors.length)]));
+        }
+
+        function fAnimate() {
+            requestAnimationFrame(fAnimate);
+            ctx.clearRect(0, 0, fCanvas.width, fCanvas.height);
+            
+            if (Math.random() < 0.03) explode(Math.random() * fCanvas.width, fCanvas.height * Math.random() * 0.5);
+
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.update(); p.draw();
+                if (p.alpha <= 0) particles.splice(i, 1);
+            }
+        }
+
+        explode(fCanvas.width / 2, fCanvas.height / 3);
+        setTimeout(() => explode(fCanvas.width * 0.3, fCanvas.height * 0.4), 600);
+        setTimeout(() => explode(fCanvas.width * 0.7, fCanvas.height * 0.4), 1200);
+
+        fAnimate();
+    }
+</script>
+</body>
+</html>
